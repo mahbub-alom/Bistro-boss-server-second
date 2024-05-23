@@ -235,7 +235,7 @@ async function run() {
     });
 
     //admin stats
-    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/admin-stats", async (req, res) => {
       const users = await usersCollection.estimatedDocumentCount();
       const menuItems = await menuCollection.estimatedDocumentCount();
       const orders = await paymentCollection.estimatedDocumentCount();
@@ -258,7 +258,7 @@ async function run() {
           },
         ])
         .toArray();
-      const revenue = result.length > 0 ? result[0].revenue : 0;
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
 
       res.send({ users, menuItems, orders, revenue });
     });
