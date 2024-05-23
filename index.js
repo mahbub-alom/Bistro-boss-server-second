@@ -234,6 +234,35 @@ async function run() {
       res.send(result);
     });
 
+    //admin stats
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const menuItems = await menuCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+
+      //this is not best way
+      // const payment = await paymentCollection.find().toArray();
+      // const revenue = payment.reduce(
+      //   (total, payment) => total + payment.price,
+      //   0
+      // );
+
+      //this is best way
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: "$price" },
+            },
+          },
+        ])
+        .toArray();
+      const revenue = result.length > 0 ? result[0].revenue : 0;
+
+      res.send({ users, menuItems, orders, revenue });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
